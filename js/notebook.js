@@ -61,7 +61,12 @@
     });
 
     // --- BẢO MẬT: PHÍM TẮT ---
-    // Sử dụng capture phase để bắt sớm hơn
+    // Theo dõi trạng thái phím để chặn ngay khi CMD+Shift (Mac) hoặc Windows+Shift (Windows) được nhấn
+    let keyState = {
+        meta: false,  // CMD trên Mac, Windows key trên Windows
+        shift: false
+    };
+
     function handleKeyDown(e) {
         // 1. Phím PrintScreen
         if (e.key === 'PrintScreen' || e.keyCode === 44) {
@@ -71,38 +76,32 @@
             return false;
         }
 
-        // 2. MACBOOK: Command + Shift + 3/4/5
-        // Kiểm tra nhiều cách để chắc chắn bắt được
+        // 2. Cập nhật trạng thái phím
         const isMeta = e.metaKey || e.key === 'Meta' || e.keyCode === 91 || e.keyCode === 93;
         const isShift = e.shiftKey || e.keyCode === 16;
-        const key = e.key;
-        const keyCode = e.keyCode;
-        
-        // KeyCode cho số: 3=51, 4=52, 5=53
-        const isNumberKey = (keyCode === 51 || keyCode === 52 || keyCode === 53) || 
-                           (key === '3' || key === '4' || key === '5');
 
-        // Kiểm tra tổ hợp Command + Shift + số
-        if (isMeta && isShift && isNumberKey) {
+        // Cập nhật state
+        if (isMeta) keyState.meta = true;
+        if (isShift) keyState.shift = true;
+
+        // CHẶN NGAY khi phát hiện CMD+Shift (Mac) hoặc Windows+Shift (Windows)
+        // Cả 2 đều dùng Meta key trong JavaScript
+        if (keyState.meta && keyState.shift) {
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
-            const number = key || String.fromCharCode(keyCode);
-            handleSecurityBreach('Mac Screenshot: Cmd+Shift+' + number);
+            // Phát hiện OS để hiển thị đúng tên
+            const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform) || /Mac/i.test(navigator.userAgent);
+            const modifier = isMac ? 'Cmd' : 'Windows';
+            handleSecurityBreach(modifier + '+Shift - Blocked Immediately');
             return false;
         }
 
-        // 3. WINDOWS: Win + Shift + S
-        if (isMeta && isShift && (key === 's' || key === 'S' || keyCode === 83)) {
-            e.preventDefault();
-            e.stopPropagation();
-            handleSecurityBreach('Win+Shift+S');
-            return false;
-        }
-
-        // 4. Chặn F12 / DevTools
+        // 3. Chặn F12 / DevTools
+        const key = e.key;
+        const isCtrl = e.ctrlKey || e.keyCode === 17;
         if (e.key === 'F12' || e.keyCode === 123 ||
-           (e.ctrlKey && isShift && ['I','J','C'].includes(key.toUpperCase())) ||
+           (isCtrl && isShift && ['I','J','C'].includes(key.toUpperCase())) ||
            (isMeta && e.altKey && ['I','J','C'].includes(key.toUpperCase()))
         ) {
             e.preventDefault();
@@ -115,22 +114,29 @@
     document.addEventListener('keydown', handleKeyDown, true);
     window.addEventListener('keydown', handleKeyDown, true);
 
-    // Keyup dự phòng
+    // Keyup để reset state và dự phòng
     function handleKeyUp(e) {
+        // Reset state khi thả phím
+        if (!e.metaKey && e.keyCode !== 91 && e.keyCode !== 93) {
+            keyState.meta = false;
+        }
+        if (!e.shiftKey && e.keyCode !== 16) {
+            keyState.shift = false;
+        }
+
         // Dự phòng cho PrintScreen
         if (e.key === 'PrintScreen' || e.keyCode === 44) {
             handleSecurityBreach('PrintScreen KeyUp');
         }
 
-        // Dự phòng cho Mac Screenshot - kiểm tra lại khi thả phím
+        // Dự phòng: Kiểm tra lại khi thả phím nếu vẫn còn CMD+Shift hoặc Windows+Shift
         const isMeta = e.metaKey || e.key === 'Meta' || e.keyCode === 91 || e.keyCode === 93;
         const isShift = e.shiftKey || e.keyCode === 16;
-        const keyCode = e.keyCode;
-        const isNumberKey = (keyCode === 51 || keyCode === 52 || keyCode === 53);
         
-        if (isMeta && isShift && isNumberKey) {
-            const number = String.fromCharCode(keyCode);
-            handleSecurityBreach('Mac Screenshot KeyUp: Cmd+Shift+' + number);
+        if (isMeta && isShift) {
+            const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform) || /Mac/i.test(navigator.userAgent);
+            const modifier = isMac ? 'Cmd' : 'Windows';
+            handleSecurityBreach(modifier + '+Shift KeyUp - Still Blocked');
         }
     }
 
