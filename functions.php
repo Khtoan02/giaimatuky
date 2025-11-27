@@ -584,3 +584,161 @@ add_action('wp_footer', function () {
     echo '<script>window.giaimatuky_ajax_url = "' . esc_url(admin_url('admin-ajax.php')) . '";</script>';
 });
 
+/**
+ * Custom post type: Chuyên gia
+ */
+add_action('init', 'gmk_register_expert_post_type');
+function gmk_register_expert_post_type() {
+    $labels = array(
+        'name'               => __('Chuyên gia', 'giaimatuky'),
+        'singular_name'      => __('Chuyên gia', 'giaimatuky'),
+        'menu_name'          => __('Chuyên gia', 'giaimatuky'),
+        'name_admin_bar'     => __('Chuyên gia', 'giaimatuky'),
+        'add_new'            => __('Thêm chuyên gia', 'giaimatuky'),
+        'add_new_item'       => __('Thêm chuyên gia mới', 'giaimatuky'),
+        'edit_item'          => __('Chỉnh sửa chuyên gia', 'giaimatuky'),
+        'new_item'           => __('Chuyên gia mới', 'giaimatuky'),
+        'view_item'          => __('Xem chuyên gia', 'giaimatuky'),
+        'all_items'          => __('Danh sách chuyên gia', 'giaimatuky'),
+        'search_items'       => __('Tìm chuyên gia', 'giaimatuky'),
+        'not_found'          => __('Chưa có chuyên gia nào', 'giaimatuky'),
+        'not_found_in_trash' => __('Không có chuyên gia trong thùng rác', 'giaimatuky'),
+    );
+
+    register_post_type(
+        'gmk_expert',
+        array(
+            'labels'        => $labels,
+            'public'        => true,
+            'menu_icon'     => 'dashicons-groups',
+            'supports'      => array('title', 'editor', 'thumbnail', 'revisions', 'page-attributes'),
+            'has_archive'   => false,
+            'show_in_rest'  => true,
+            'rewrite'       => array('slug' => 'chuyen-gia'),
+        )
+    );
+
+    $tax_labels = array(
+        'name'          => __('Lĩnh vực chuyên môn', 'giaimatuky'),
+        'singular_name' => __('Lĩnh vực chuyên môn', 'giaimatuky'),
+        'search_items'  => __('Tìm lĩnh vực', 'giaimatuky'),
+        'all_items'     => __('Tất cả lĩnh vực', 'giaimatuky'),
+        'edit_item'     => __('Chỉnh sửa lĩnh vực', 'giaimatuky'),
+        'update_item'   => __('Cập nhật lĩnh vực', 'giaimatuky'),
+        'add_new_item'  => __('Thêm lĩnh vực mới', 'giaimatuky'),
+        'menu_name'     => __('Lĩnh vực', 'giaimatuky'),
+    );
+
+    register_taxonomy(
+        'gmk_expert_domain',
+        'gmk_expert',
+        array(
+            'labels'            => $tax_labels,
+            'hierarchical'      => false,
+            'show_admin_column' => true,
+            'show_in_rest'      => true,
+            'rewrite'           => array('slug' => 'linh-vuc-chuyen-gia'),
+        )
+    );
+}
+
+/**
+ * Expert meta box
+ */
+add_action('add_meta_boxes', 'gmk_add_expert_meta_box');
+function gmk_add_expert_meta_box() {
+    add_meta_box(
+        'gmk_expert_details',
+        __('Thông tin chuyên gia', 'giaimatuky'),
+        'gmk_render_expert_meta_box',
+        'gmk_expert',
+        'normal',
+        'high'
+    );
+}
+
+function gmk_render_expert_meta_box($post) {
+    wp_nonce_field('gmk_expert_meta_nonce', 'gmk_expert_meta_nonce');
+
+    $job_title   = get_post_meta($post->ID, 'gmk_expert_job_title', true);
+    $location    = get_post_meta($post->ID, 'gmk_expert_location', true);
+    $credentials = get_post_meta($post->ID, 'gmk_expert_credentials', true);
+    $avatar_id   = (int) get_post_meta($post->ID, 'gmk_expert_avatar_id', true);
+    $avatar_url  = $avatar_id ? wp_get_attachment_image_url($avatar_id, 'medium') : '';
+    ?>
+    <div class="gmk-expert-meta-grid" style="display:grid;gap:1rem;">
+        <p>
+            <label for="gmk_expert_job_title" style="display:block;font-weight:600;margin-bottom:4px;"><?php _e('Chức danh / vai trò', 'giaimatuky'); ?></label>
+            <input type="text" id="gmk_expert_job_title" name="gmk_expert_job_title" class="widefat"
+                   value="<?php echo esc_attr($job_title); ?>" placeholder="<?php esc_attr_e('VD: Tiến sĩ Tâm lý giáo dục', 'giaimatuky'); ?>">
+        </p>
+        <p>
+            <label for="gmk_expert_location" style="display:block;font-weight:600;margin-bottom:4px;"><?php _e('Khu vực làm việc', 'giaimatuky'); ?></label>
+            <input type="text" id="gmk_expert_location" name="gmk_expert_location" class="widefat"
+                   value="<?php echo esc_attr($location); ?>" placeholder="<?php esc_attr_e('VD: Kuala Lumpur, Malaysia', 'giaimatuky'); ?>">
+        </p>
+        <p>
+            <label for="gmk_expert_credentials" style="display:block;font-weight:600;margin-bottom:4px;"><?php _e('Thành tựu / chứng chỉ', 'giaimatuky'); ?></label>
+            <textarea id="gmk_expert_credentials" name="gmk_expert_credentials" class="widefat" rows="6"
+                      placeholder="<?php esc_attr_e('Mỗi dòng là một chứng chỉ hoặc thành tựu...', 'giaimatuky'); ?>"><?php echo esc_textarea($credentials); ?></textarea>
+            <small><?php _e('Nhập mỗi dòng một gạch đầu dòng để hiển thị trong giao diện.', 'giaimatuky'); ?></small>
+        </p>
+        <div>
+            <label style="display:block;font-weight:600;margin-bottom:8px;"><?php _e('Ảnh chuyên gia', 'giaimatuky'); ?></label>
+            <div class="gmk-expert-avatar-preview" style="margin-bottom:0.75rem;">
+                <?php if ($avatar_url) : ?>
+                    <img src="<?php echo esc_url($avatar_url); ?>" alt="" style="max-width:180px;border-radius:12px;">
+                <?php endif; ?>
+            </div>
+            <input type="hidden" id="gmk_expert_avatar_id" name="gmk_expert_avatar_id" value="<?php echo esc_attr($avatar_id); ?>">
+            <button type="button" class="button gmk-expert-avatar-select"><?php _e('Chọn ảnh', 'giaimatuky'); ?></button>
+            <button type="button" class="button gmk-expert-avatar-remove <?php echo $avatar_id ? '' : 'is-hidden'; ?>"
+                    style="margin-left:8px;"><?php _e('Xoá ảnh', 'giaimatuky'); ?></button>
+        </div>
+    </div>
+    <?php
+}
+
+add_action('save_post_gmk_expert', 'gmk_save_expert_meta');
+function gmk_save_expert_meta($post_id) {
+    if (!isset($_POST['gmk_expert_meta_nonce']) || !wp_verify_nonce($_POST['gmk_expert_meta_nonce'], 'gmk_expert_meta_nonce')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    $job_title   = isset($_POST['gmk_expert_job_title']) ? sanitize_text_field($_POST['gmk_expert_job_title']) : '';
+    $location    = isset($_POST['gmk_expert_location']) ? sanitize_text_field($_POST['gmk_expert_location']) : '';
+    $credentials = isset($_POST['gmk_expert_credentials']) ? sanitize_textarea_field($_POST['gmk_expert_credentials']) : '';
+    $avatar_id   = isset($_POST['gmk_expert_avatar_id']) ? absint($_POST['gmk_expert_avatar_id']) : 0;
+
+    update_post_meta($post_id, 'gmk_expert_job_title', $job_title);
+    update_post_meta($post_id, 'gmk_expert_location', $location);
+    update_post_meta($post_id, 'gmk_expert_credentials', $credentials);
+    update_post_meta($post_id, 'gmk_expert_avatar_id', $avatar_id);
+}
+
+/**
+ * Admin assets for expert media field
+ */
+add_action('admin_enqueue_scripts', 'gmk_enqueue_expert_admin_assets');
+function gmk_enqueue_expert_admin_assets($hook) {
+    $screen = get_current_screen();
+    if (!$screen || 'gmk_expert' !== $screen->post_type) {
+        return;
+    }
+
+    wp_enqueue_media();
+    wp_enqueue_script(
+        'gmk-expert-admin',
+        get_template_directory_uri() . '/js/gmk-expert-admin.js',
+        array('jquery'),
+        '1.0.0',
+        true
+    );
+}
+

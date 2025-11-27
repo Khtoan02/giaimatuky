@@ -238,6 +238,187 @@ $topics = array(
             </div>
         </section>
 
+        <section class="py-20 bg-[#FFF9E5]">
+            <div class="container mx-auto px-4 md:px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-orange-600 font-bold tracking-widest text-sm uppercase mb-2">Đội ngũ chuyên gia</h2>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900">Gặp gỡ Hội đồng Cố vấn</h1>
+                </div>
+                <div class="relative group px-4 max-w-6xl mx-auto">
+                    <!-- Slider Track -->
+                    <div class="overflow-hidden py-4">
+                        <div id="gmk-expert-slider-track" class="flex transition-transform duration-500 ease-out will-change-transform">
+                            <?php
+                            // GIẢ LẬP DỮ LIỆU CHUYÊN GIA
+                            $EXPERTS = [
+                                [
+                                    "id" => 1,
+                                    "image" => "https://giaimatuky.quest/wp-content/uploads/2025/11/1.jpg",
+                                ],
+                                [
+                                    "id" => 2,
+                                    "image" => "https://giaimatuky.quest/wp-content/uploads/2025/11/10.jpg",
+                                ],
+                                [
+                                    "id" => 3,
+                                    "image" => "https://giaimatuky.quest/wp-content/uploads/2025/11/11.jpg",
+                                ],
+                                [
+                                    "id" => 4,
+                                    "image" => "https://giaimatuky.quest/wp-content/uploads/2025/11/15.jpg",
+                                ],
+                                [
+                                    "id" => 5,
+                                    "image" => "https://giaimatuky.quest/wp-content/uploads/2025/11/16.jpg",
+                                ],
+                                [
+                                    "id" => 6,
+                                    "image" => "https://giaimatuky.quest/wp-content/uploads/2025/11/17.jpg",
+                                ],
+                                [
+                                    "id" => 7,
+                                    "image" => "https://giaimatuky.quest/wp-content/uploads/2025/11/Eva.jpg",
+                                ],
+                            ];
+                            foreach ($EXPERTS as $expert) : ?>
+                                <div class="flex-shrink-0 px-2 sm:px-3 md:px-4 slider-expert-card">
+                                    <div class="group/card cursor-pointer relative transition-transform duration-300 hover:-translate-y-2">
+                                        <div class="w-full aspect-square rounded-2xl overflow-hidden shadow-lg border-2 border-white bg-white">
+                                            <img 
+                                                src="<?php echo esc_url($expert['image']); ?>"
+                                                alt="Expert Slide"
+                                                class="w-full h-full object-cover transition-transform duration-500 group-hover/card:scale-105"
+                                            />
+                                            <div class="absolute inset-0 bg-black/0 group-hover/card:bg-white/10 transition-colors duration-300 pointer-events-none"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                    <!-- Navigation Buttons -->
+                    <button 
+                        type="button"
+                        id="gmk-expert-slider-prev"
+                        class="absolute top-1/2 -left-2 md:-left-6 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white hover:bg-orange-50 text-slate-800 hover:text-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 z-20 border border-slate-200"
+                        aria-label="Chuyên gia trước"
+                    >
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
+                    <button 
+                        type="button"
+                        id="gmk-expert-slider-next"
+                        class="absolute top-1/2 -right-2 md:-right-6 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 bg-white hover:bg-orange-50 text-slate-800 hover:text-orange-600 rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 z-20 border border-slate-200"
+                        aria-label="Chuyên gia tiếp theo"
+                    >
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+                    <!-- Pagination Dots -->
+                    <div class="flex justify-center mt-8 gap-2" id="gmk-expert-slider-dots">
+                        <!-- Dots will render by JS -->
+                    </div>
+                </div>
+            </div>
+            <script>
+            (function() {
+                // --- Data --- //
+                const EXPERTS = <?php echo json_encode($EXPERTS); ?>;
+                // Elements
+                const track = document.getElementById('gmk-expert-slider-track');
+                const prevBtn = document.getElementById('gmk-expert-slider-prev');
+                const nextBtn = document.getElementById('gmk-expert-slider-next');
+                const dotsContainer = document.getElementById('gmk-expert-slider-dots');
+
+                // State
+                let currentIndex = 0;
+                let itemsPerScreen = 4;
+
+                function updateItemsPerScreen() {
+                    if (window.innerWidth < 640) itemsPerScreen = 1;
+                    else if (window.innerWidth < 1024) itemsPerScreen = 2;
+                    else if (window.innerWidth < 1280) itemsPerScreen = 3;
+                    else itemsPerScreen = 4;
+                }
+
+                function getMaxIndex() {
+                    return Math.max(0, EXPERTS.length - itemsPerScreen);
+                }
+
+                function updateSlider() {
+                    // Slide
+                    track.style.transform = `translateX(-${currentIndex * (100/itemsPerScreen)}%)`;
+                    // Responsive width for slides
+                    Array.from(track.children).forEach(el => {
+                        el.style.width = (100/itemsPerScreen) + "%";
+                    });
+
+                    // Render dots
+                    if(dotsContainer){
+                        dotsContainer.innerHTML = "";
+                        let numDots = Math.max(0, EXPERTS.length - itemsPerScreen + 1);
+                        for(let i = 0; i < numDots; i++) {
+                            const btn = document.createElement('button');
+                            btn.type = "button";
+                            btn.className = "h-2 rounded-full transition-all duration-300 " + (currentIndex === i ? "w-8 bg-orange-600" : "w-2 bg-slate-300 hover:bg-slate-400");
+                            btn.setAttribute("aria-label", "Slide " + (i+1));
+                            if(currentIndex === i) btn.setAttribute("aria-current", "true");
+                            btn.addEventListener('click', function() {
+                                currentIndex = i;
+                                updateSlider();
+                            });
+                            dotsContainer.appendChild(btn);
+                        }
+                    }
+                }
+
+                function nextSlide() {
+                    const maxIndex = getMaxIndex();
+                    currentIndex = (currentIndex >= maxIndex ? 0 : currentIndex + 1);
+                    updateSlider();
+                }
+
+                function prevSlide() {
+                    const maxIndex = getMaxIndex();
+                    currentIndex = (currentIndex <= 0 ? maxIndex : currentIndex - 1);
+                    updateSlider();
+                }
+
+                // Init
+                function handleResize() {
+                    updateItemsPerScreen();
+                    // Clamp current index
+                    if(currentIndex > getMaxIndex()) currentIndex = getMaxIndex();
+                    updateSlider();
+                }
+                window.addEventListener('resize', handleResize);
+
+                prevBtn && prevBtn.addEventListener('click', prevSlide);
+                nextBtn && nextBtn.addEventListener('click', nextSlide);
+
+                // Touch support (swipe)
+                let startX = 0, isDragging = false;
+                if(track){
+                    track.addEventListener('touchstart', function(e){
+                        isDragging = true;
+                        startX = e.touches[0].clientX;
+                    });
+                    track.addEventListener('touchend', function(e){
+                        if(!isDragging) return;
+                        let endX = e.changedTouches[0].clientX;
+                        let deltaX = endX - startX;
+                        if (deltaX > 40) prevSlide();
+                        if (deltaX < -40) nextSlide();
+                        isDragging = false;
+                    });
+                }
+
+                // Kickstart
+                handleResize();
+
+            })();
+            </script>
+        </section>
+
         <section id="videos" class="py-20 bg-slate-50">
             <div class="container mx-auto px-4 md:px-6 space-y-8">
                 <?php if ($show_youtube_notice) : ?>

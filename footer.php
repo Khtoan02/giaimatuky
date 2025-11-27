@@ -8,55 +8,34 @@
 
 </main><!-- #site-main -->
 
-<footer class="gmk-footer">
-    <div class="gmk-shell space-y-10">
-        <div class="gmk-footer__grid">
-            <div class="space-y-3">
-                <div class="gmk-footer__brand"><?php bloginfo('name'); ?></div>
-                <p class="gmk-footer__note">
-                    <?php bloginfo('description'); ?>
-                </p>
-                <div class="flex items-center gap-3 text-xl text-white/70">
-                    <a href="<?php echo esc_url(home_url('/rss')); ?>" class="hover:text-white" aria-label="RSS">
-                        <i class="fa-solid fa-rss"></i>
-                    </a>
-                    <a href="https://facebook.com" class="hover:text-white" target="_blank" rel="noopener">
-                        <i class="fa-brands fa-facebook"></i>
-                    </a>
-                    <a href="https://youtube.com" class="hover:text-white" target="_blank" rel="noopener">
-                        <i class="fa-brands fa-youtube"></i>
-                    </a>
-                </div>
-            </div>
-
-            <?php if (is_active_sidebar('footer-1')) : ?>
-                <div class="footer-widget text-sm text-white/80">
-                    <?php dynamic_sidebar('footer-1'); ?>
-                </div>
-            <?php endif; ?>
-
-            <?php if (is_active_sidebar('footer-2')) : ?>
-                <div class="footer-widget text-sm text-white/80">
-                    <?php dynamic_sidebar('footer-2'); ?>
-                </div>
-            <?php endif; ?>
-
-            <?php if (is_active_sidebar('footer-3')) : ?>
-                <div class="footer-widget text-sm text-white/80">
-                    <?php dynamic_sidebar('footer-3'); ?>
-                </div>
-            <?php endif; ?>
+<footer class="bg-white border-t border-slate-100 py-12">
+    <div class="container mx-auto px-4 text-center space-y-6">
+        <div class="flex justify-center items-center gap-2 text-slate-800 font-bold text-lg">
+            <i class="fa-solid fa-heart text-sky-500"></i>
+            <span><?php bloginfo('name'); ?></span>
         </div>
-
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-sm text-white/60">
-            <div>
-                &copy; <?php echo esc_html(date('Y')); ?> <?php bloginfo('name'); ?> — <?php esc_html_e('Bản quyền thuộc về tác giả.', 'giaimatuky'); ?>
-            </div>
-            <div class="gmk-top-nav text-white/60">
-                <a href="<?php echo esc_url(home_url('/chinh-sach-bao-mat')); ?>"><?php esc_html_e('Chính sách bảo mật', 'giaimatuky'); ?></a>
-                <a href="<?php echo esc_url(home_url('/dieu-khoan-su-dung')); ?>"><?php esc_html_e('Điều khoản', 'giaimatuky'); ?></a>
-                <a href="<?php echo esc_url(home_url('/lien-he')); ?>"><?php esc_html_e('Liên hệ', 'giaimatuky'); ?></a>
-            </div>
+        <p class="text-slate-500 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
+            <?php
+            $footer_message = get_theme_mod(
+                'gmk_footer_message',
+                __('Nơi tổng hợp các thắc mắc thực tế từ phụ huynh để xây dựng nội dung hữu ích và lan tỏa sự thấu hiểu trong cộng đồng.', 'giaimatuky')
+            );
+            echo esc_html($footer_message);
+            ?>
+        </p>
+        <div class="flex justify-center gap-6 text-sm font-semibold text-slate-600 uppercase tracking-wider">
+            <a href="https://www.youtube.com/channel/UC8RRqVV1gZyor3hPvyxjjNw" target="_blank" rel="noreferrer" class="hover:text-sky-600">
+                Youtube
+            </a>
+            <a href="https://www.facebook.com" target="_blank" rel="noreferrer" class="hover:text-sky-600">
+                Facebook
+            </a>
+            <a href="https://www.tiktok.com" target="_blank" rel="noreferrer" class="hover:text-sky-600">
+                Tiktok
+            </a>
+        </div>
+        <div class="text-xs text-slate-400">
+            &copy; <?php echo esc_html(date('Y')); ?> <?php bloginfo('name'); ?> · <?php esc_html_e('All rights reserved.', 'giaimatuky'); ?>
         </div>
     </div>
 </footer>
