@@ -321,6 +321,13 @@ img {
   text-decoration: underline solid 2px #1d4ed8;
 }
 
+.gmk-cta-button {
+  color: #ffffff !important;
+}
+.gmk-cta-button:hover {
+  color: #ffffff !important;
+}
+
 @media (max-width: 768px) {
   .gmk-shell {
     padding: 0 1rem;

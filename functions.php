@@ -109,6 +109,192 @@ function giaimatuky_scripts() {
 add_action('wp_enqueue_scripts', 'giaimatuky_scripts');
 
 /**
+ * Handle câu hỏi từ trang form-cau-hoi.php
+ */
+function giaimatuky_handle_question_submission() {
+
+    $topic   = isset($_POST['topic']) ? sanitize_text_field(wp_unslash($_POST['topic'])) : '';
+    $message = isset($_POST['message']) ? trim(wp_unslash($_POST['message'])) : '';
+
+    if ('' === $topic || '' === $message) {
+        giaimatuky_redirect_question_form('missing_fields', $topic);
+    }
+
+    if (mb_strlen($message) < 20) {
+        giaimatuky_redirect_question_form('short_message', $topic);
+    }
+
+    $topic_labels = array(
+        'giao-tiep-ngon-ngu' => 'Giao tiếp & Ngôn ngữ',
+        'hanh-vi-cam-xuc'    => 'Hành vi & Xử lý cảm giác',
+        'tieu-hoa-sinh-hoat' => 'Tiêu hoá & Sinh hoạt',
+        'nhan-thuc'          => 'Nhận thức & Tư duy',
+        'can-thiep-giao-duc' => 'Can thiệp & Giáo dục',
+        'tuong-lai'          => 'Tương lai & Khả năng sống độc lập',
+        'nguyen-nhan'        => 'Nguyên nhân & Chẩn đoán',
+        'ho-tro-gia-dinh'    => 'Hỗ trợ gia đình',
+        'khac'               => 'Vấn đề khác',
+    );
+
+    $topic_label = isset($topic_labels[ $topic ]) ? $topic_labels[ $topic ] : $topic;
+    $clean_message = sanitize_textarea_field($message);
+
+    $admin_email = get_option('admin_email');
+    $subject = sprintf('[Giải Mã Tự Kỷ] Câu hỏi mới (%s)', $topic_label);
+    $body = "Chủ đề: {$topic_label}\n----------------------\n{$clean_message}\n\nNguồn trang: " . (wp_get_referer() ? esc_url_raw(wp_get_referer()) : home_url('/'));
+
+    $mail_sent = wp_mail(
+        $admin_email,
+        $subject,
+        $body,
+        array('Content-Type: text/plain; charset=UTF-8')
+    );
+
+    if (!$mail_sent) {
+        giaimatuky_redirect_question_form('send_failed', $topic);
+    }
+
+    giaimatuky_redirect_question_form('');
+}
+add_action('admin_post_nopriv_gmk_submit_question', 'giaimatuky_handle_question_submission');
+add_action('admin_post_gmk_submit_question', 'giaimatuky_handle_question_submission');
+
+/**
+ * Redirect helper cho form câu hỏi
+ *
+ * @param string $error_code .
+ * @param string $topic .
+ */
+function giaimatuky_redirect_question_form($error_code = '', $topic = '') {
+    $redirect_url = wp_get_referer() ? wp_get_referer() : home_url('/');
+    $args = array();
+    if ($error_code) {
+        $args['form_status'] = 'error';
+        $args['form_error']  = $error_code;
+        if ($topic) {
+            $args['topic'] = $topic;
+        }
+    } else {
+        $args['form_status'] = 'success';
+    }
+    $redirect_url = add_query_arg($args, $redirect_url);
+    wp_safe_redirect($redirect_url);
+    exit;
+}
+
+/**
+ * Lấy danh sách video mới nhất từ YouTube RSS feed.
+ *
+ * @param array $args Tham số bổ sung.
+ *
+ * @return array
+ */
+function giaimatuky_get_youtube_videos($args = array()) {
+    $defaults = array(
+        'max_results' => 8,
+        'cache_ttl'   => HOUR_IN_SECONDS,
+        'channel_id'  => '',
+    );
+    $args = wp_parse_args($args, $defaults);
+
+    $channel_id = $args['channel_id'] ? $args['channel_id'] : trim(get_theme_mod('gmk_youtube_channel_id', ''));
+    if ('' === $channel_id) {
+        return array();
+    }
+
+    $max_results = max(1, min(15, absint($args['max_results'])));
+    $cache_key   = 'gmk_yt_rss_' . md5($channel_id . '|' . $max_results);
+    $cached      = get_transient($cache_key);
+    if (false !== $cached) {
+        return $cached;
+    }
+
+    $feed_url = add_query_arg(
+        array(
+            'channel_id' => $channel_id,
+        ),
+        'https://www.youtube.com/feeds/videos.xml'
+    );
+
+    $response = wp_remote_get($feed_url, array('timeout' => 12));
+    if (is_wp_error($response)) {
+        return array();
+    }
+
+    $body = wp_remote_retrieve_body($response);
+    if (empty($body)) {
+        return array();
+    }
+
+    $xml = simplexml_load_string($body);
+    if (false === $xml || empty($xml->entry)) {
+        return array();
+    }
+
+    $videos   = array();
+    $count    = 0;
+    foreach ($xml->entry as $entry) {
+        if ($count >= $max_results) {
+            break;
+        }
+
+        $namespaces = $entry->getNamespaces(true);
+        $yt         = isset($namespaces['yt']) ? $entry->children($namespaces['yt']) : null;
+        $media      = isset($namespaces['media']) ? $entry->children($namespaces['media']) : null;
+
+        $video_id = '';
+        if ($yt && isset($yt->videoId)) {
+            $video_id = (string) $yt->videoId;
+        }
+        if ('' === $video_id && isset($entry->id)) {
+            $parts = explode(':', (string) $entry->id);
+            $video_id = end($parts);
+        }
+
+        $title = isset($entry->title) ? (string) $entry->title : '';
+        $description = '';
+        $thumbnail   = '';
+        if ($media && isset($media->group)) {
+            $group = $media->group;
+            if (isset($group->description)) {
+                $description = (string) $group->description;
+            }
+            if (isset($group->thumbnail)) {
+                $thumb_attrs = $group->thumbnail->attributes();
+                if ($thumb_attrs && isset($thumb_attrs['url'])) {
+                    $thumbnail = (string) $thumb_attrs['url'];
+                }
+            }
+        }
+
+        if ('' === $description && isset($entry->content)) {
+            $description = (string) $entry->content;
+        }
+
+        if ('' === $thumbnail && '' !== $video_id) {
+            $thumbnail = sprintf('https://img.youtube.com/vi/%s/hqdefault.jpg', $video_id);
+        }
+
+        if ('' === $video_id || '' === $title) {
+            continue;
+        }
+
+        $videos[] = array(
+            'id'        => $video_id,
+            'title'     => $title,
+            'desc'      => $description,
+            'thumbnail' => $thumbnail,
+            'url'       => sprintf('https://www.youtube.com/watch?v=%s', $video_id),
+        );
+        $count++;
+    }
+
+    set_transient($cache_key, $videos, $args['cache_ttl']);
+
+    return $videos;
+}
+
+/**
  * Register widget areas
  */
 function giaimatuky_widgets_init() {
@@ -223,6 +409,46 @@ add_action('customize_register', function ($wp_customize) {
         'label'       => __('Danh sách danh mục nổi bật', 'giaimatuky'),
         'type'        => 'text',
         'description' => __('Nhập slug, cách nhau bằng dấu phẩy (ví dụ: tin-nong, cong-nghe). Bỏ trống để lấy danh mục phổ biến.', 'giaimatuky'),
+    ));
+
+    $wp_customize->add_section('giaimatuky_youtube', array(
+        'title'       => __('YouTube channel', 'giaimatuky'),
+        'priority'    => 40,
+        'description' => __('Nhập Channel ID để tự động hiển thị video mới nhất thông qua RSS feed.', 'giaimatuky'),
+    ));
+
+    $wp_customize->add_setting('gmk_youtube_channel_id', array(
+        'default'           => '',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+    $wp_customize->add_control('gmk_youtube_channel_id', array(
+        'section'     => 'giaimatuky_youtube',
+        'label'       => __('Channel ID', 'giaimatuky'),
+        'type'        => 'text',
+        'description' => __('Ví dụ: UCxxxxxxxxxx (xem trong phần Advanced settings của YouTube Studio).', 'giaimatuky'),
+    ));
+
+    $wp_customize->add_setting('gmk_youtube_max_items', array(
+        'default'           => 8,
+        'sanitize_callback' => function ($value) {
+            $value = absint($value);
+            if ($value < 1) {
+                $value = 1;
+            }
+            if ($value > 15) {
+                $value = 15;
+            }
+            return $value;
+        },
+    ));
+    $wp_customize->add_control('gmk_youtube_max_items', array(
+        'section'     => 'giaimatuky_youtube',
+        'label'       => __('Số video muốn hiển thị', 'giaimatuky'),
+        'type'        => 'number',
+        'input_attrs' => array(
+            'min' => 1,
+            'max' => 15,
+        ),
     ));
 });
 

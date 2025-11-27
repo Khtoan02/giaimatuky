@@ -4,15 +4,14 @@
 (function() {
     'use strict';
 
-    // Mobile menu toggle (if needed in the future)
-    const navToggle = document.querySelector('.menu-toggle');
-    const navMenu = document.querySelector('.main-navigation');
+const navToggle = document.querySelector('.menu-toggle');
+const mobileNav = document.querySelector('.mobile-navigation');
 
-    if (navToggle && navMenu) {
-        navToggle.addEventListener('click', function() {
-            navMenu.classList.toggle('is-open');
-            this.setAttribute('aria-expanded', navMenu.classList.contains('is-open'));
-        });
-    }
+if (navToggle && mobileNav) {
+    navToggle.addEventListener('click', function() {
+        const isHidden = mobileNav.classList.toggle('hidden');
+        this.setAttribute('aria-expanded', (!isHidden).toString());
+    });
+}
 })();
 
