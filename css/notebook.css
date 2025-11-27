@@ -1,0 +1,291 @@
+:root {
+    --sidebar-bg: #2c3e50;
+    --sidebar-text: #ecf0f1;
+    --paper-bg: #fffdf0;
+    --line-color: #94a3b8;
+    --margin-line: #ef4444;
+    --text-color: #334155;
+    --sidebar-width: 260px;
+}
+
+/* --- BẢO MẬT CẤP ĐỘ CSS (QUAN TRỌNG CHO MOBILE) --- */
+body.notebook-page {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: #e2e8f0;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+    
+    /* 1. Chống bôi đen cơ bản */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+    /* 2. CHẶN MENU KHI ẤN GIỮ TRÊN IPHONE (iOS Safari) */
+    -webkit-touch-callout: none;
+    
+    /* 3. Chặn hành động kéo thả ảnh ra ngoài */
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+}
+
+/* --- SIDEBAR --- */
+.notebook-sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+    z-index: 10;
+    transition: transform 0.3s ease;
+}
+
+/* Nút menu cho Mobile */
+.notebook-mobile-toggle {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 100;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.notebook-brand {
+    font-family: 'Patrick Hand', cursive;
+    font-size: 1.8rem;
+    margin-bottom: 30px;
+    color: #f1c40f;
+    text-align: center;
+    border-bottom: 2px dashed #7f8c8d;
+    padding-bottom: 15px;
+}
+
+.notebook-menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+}
+
+.notebook-menu-item {
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+}
+
+.notebook-menu-item:hover,
+.notebook-menu-item.active {
+    background-color: rgba(255,255,255,0.1);
+    color: #fff;
+    transform: translateX(5px);
+}
+
+.notebook-menu-item span {
+    margin-right: 10px;
+}
+
+.notebook-contact-box {
+    margin-top: auto;
+    background: rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+/* --- MAIN CONTENT AREA --- */
+.notebook-main-container {
+    flex: 1;
+    position: relative;
+    overflow-y: auto;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+    transition: opacity 0.05s;
+    -webkit-overflow-scrolling: touch;
+}
+
+.notebook-paper {
+    width: 100%;
+    max-width: 900px;
+    min-height: 1000px;
+    background-color: var(--paper-bg);
+    box-shadow: 0 0 20px rgba(0,0,0,0.15);
+    position: relative;
+    padding: 60px 80px 60px 80px;
+    color: var(--text-color);
+    background-image: linear-gradient(var(--line-color) 1px, transparent 1px);
+    background-size: 100% 32px;
+    line-height: 32px;
+}
+
+.notebook-paper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 60px;
+    width: 2px;
+    background-color: var(--margin-line);
+}
+
+.notebook-content-area h1 {
+    font-family: 'Patrick Hand', cursive;
+    color: #d35400;
+    font-size: 2.5rem;
+    margin-top: -10px;
+    margin-bottom: 32px;
+    border-bottom: 2px solid #d35400;
+    display: inline-block;
+}
+
+.notebook-content-area h2 {
+    font-family: 'Patrick Hand', cursive;
+    color: #2980b9;
+    margin-top: 32px;
+    font-size: 1.8rem;
+}
+
+.notebook-content-area p {
+    margin: 0 0 32px 0;
+    text-align: justify;
+}
+
+/* --- WATERMARK --- */
+.notebook-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 6rem;
+    font-weight: bold;
+    color: rgba(0,0,0,0.04);
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 0;
+}
+
+.notebook-repeat-watermark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='150px' width='150px'><text transform='translate(20, 80) rotate(-45)' fill='rgba(255,0,0,0.04)' font-size='16' font-weight='bold' font-family='sans-serif'>CHỐNG SAO CHÉP - LIÊN HỆ ADMIN</text></svg>");
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* --- SECURITY OVERLAY (Màn hình đen) --- */
+#notebook-security-alert {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #000;
+    z-index: 99999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+}
+
+#notebook-security-alert h2 {
+    color: #e74c3c;
+    font-size: 2rem;
+    margin-bottom: 15px;
+}
+
+.notebook-btn-unlock {
+    padding: 12px 30px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+/* Blur Effect */
+.notebook-blur-effect {
+    filter: blur(25px) grayscale(100%);
+    transition: filter 0.05s;
+}
+
+/* Hiệu ứng Blackout khi chụp màn hình */
+.notebook-blackout {
+    background-color: #000 !important;
+    filter: brightness(0) !important;
+    opacity: 1 !important;
+}
+
+.notebook-blackout * {
+    visibility: hidden !important;
+}
+
+/* --- RESPONSIVE MOBILE --- */
+@media (max-width: 768px) {
+    .notebook-mobile-toggle {
+        display: block;
+    }
+    
+    .notebook-sidebar {
+        position: fixed;
+        height: 100%;
+        left: -260px;
+        top: 0;
+    }
+    
+    .notebook-sidebar.open {
+        left: 0;
+    }
+
+    .notebook-main-container {
+        padding: 10px;
+        margin-top: 40px;
+    }
+    
+    .notebook-paper {
+        padding: 40px 20px;
+        line-height: 32px;
+    }
+    
+    .notebook-paper::before {
+        left: 20px;
+    }
+    
+    .notebook-watermark {
+        font-size: 2.5rem;
+        word-wrap: break-word;
+        text-align: center;
+    }
+    
+    .notebook-content-area h1 {
+        font-size: 1.8rem;
+    }
+}
+
