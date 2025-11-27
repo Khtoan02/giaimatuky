@@ -61,9 +61,12 @@
     });
 
     // --- BẢO MẬT: PHÍM TẮT ---
-    // Theo dõi trạng thái phím để chặn ngay khi CMD+Shift (Mac) hoặc Windows+Shift (Windows) được nhấn
+    // Theo dõi trạng thái phím để chặn ngay khi:
+    // - Mac: CMD+Shift
+    // - Windows: Windows+Shift HOẶC Ctrl+Shift
     let keyState = {
         meta: false,  // CMD trên Mac, Windows key trên Windows
+        ctrl: false,  // Ctrl key (chỉ chặn trên Windows)
         shift: false
     };
 
@@ -78,28 +81,43 @@
 
         // 2. Cập nhật trạng thái phím
         const isMeta = e.metaKey || e.key === 'Meta' || e.keyCode === 91 || e.keyCode === 93;
+        const isCtrl = e.ctrlKey || e.keyCode === 17;
         const isShift = e.shiftKey || e.keyCode === 16;
 
         // Cập nhật state
         if (isMeta) keyState.meta = true;
+        if (isCtrl) keyState.ctrl = true;
         if (isShift) keyState.shift = true;
 
-        // CHẶN NGAY khi phát hiện CMD+Shift (Mac) hoặc Windows+Shift (Windows)
-        // Cả 2 đều dùng Meta key trong JavaScript
-        if (keyState.meta && keyState.shift) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-            // Phát hiện OS để hiển thị đúng tên
-            const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform) || /Mac/i.test(navigator.userAgent);
-            const modifier = isMac ? 'Cmd' : 'Windows';
-            handleSecurityBreach(modifier + '+Shift - Blocked Immediately');
-            return false;
+        // Phát hiện OS
+        const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform) || /Mac/i.test(navigator.userAgent);
+
+        // CHẶN NGAY:
+        // - Mac: CMD+Shift
+        // - Windows: Windows+Shift HOẶC Ctrl+Shift
+        if (isMac) {
+            // Mac: chỉ chặn CMD+Shift
+            if (keyState.meta && keyState.shift) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                handleSecurityBreach('Cmd+Shift - Blocked Immediately');
+                return false;
+            }
+        } else {
+            // Windows: chặn cả Windows+Shift và Ctrl+Shift
+            if ((keyState.meta && keyState.shift) || (keyState.ctrl && keyState.shift)) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                const modifier = keyState.meta ? 'Windows' : 'Ctrl';
+                handleSecurityBreach(modifier + '+Shift - Blocked Immediately');
+                return false;
+            }
         }
 
         // 3. Chặn F12 / DevTools
         const key = e.key;
-        const isCtrl = e.ctrlKey || e.keyCode === 17;
         if (e.key === 'F12' || e.keyCode === 123 ||
            (isCtrl && isShift && ['I','J','C'].includes(key.toUpperCase())) ||
            (isMeta && e.altKey && ['I','J','C'].includes(key.toUpperCase()))
@@ -120,6 +138,9 @@
         if (!e.metaKey && e.keyCode !== 91 && e.keyCode !== 93) {
             keyState.meta = false;
         }
+        if (!e.ctrlKey && e.keyCode !== 17) {
+            keyState.ctrl = false;
+        }
         if (!e.shiftKey && e.keyCode !== 16) {
             keyState.shift = false;
         }
@@ -129,14 +150,23 @@
             handleSecurityBreach('PrintScreen KeyUp');
         }
 
-        // Dự phòng: Kiểm tra lại khi thả phím nếu vẫn còn CMD+Shift hoặc Windows+Shift
+        // Dự phòng: Kiểm tra lại khi thả phím
         const isMeta = e.metaKey || e.key === 'Meta' || e.keyCode === 91 || e.keyCode === 93;
+        const isCtrl = e.ctrlKey || e.keyCode === 17;
         const isShift = e.shiftKey || e.keyCode === 16;
+        const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform) || /Mac/i.test(navigator.userAgent);
         
-        if (isMeta && isShift) {
-            const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform) || /Mac/i.test(navigator.userAgent);
-            const modifier = isMac ? 'Cmd' : 'Windows';
-            handleSecurityBreach(modifier + '+Shift KeyUp - Still Blocked');
+        if (isMac) {
+            // Mac: chỉ kiểm tra CMD+Shift
+            if (isMeta && isShift) {
+                handleSecurityBreach('Cmd+Shift KeyUp - Still Blocked');
+            }
+        } else {
+            // Windows: kiểm tra cả Windows+Shift và Ctrl+Shift
+            if ((isMeta && isShift) || (isCtrl && isShift)) {
+                const modifier = isMeta ? 'Windows' : 'Ctrl';
+                handleSecurityBreach(modifier + '+Shift KeyUp - Still Blocked');
+            }
         }
     }
 
