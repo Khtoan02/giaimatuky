@@ -487,23 +487,6 @@ $topics = array(
                 </div>
             </div>
         </section>
-
-        <section class="bg-white border-t border-slate-100 py-10">
-            <div class="container mx-auto px-4 text-center">
-                <div class="flex justify-center items-center gap-2 mb-4 text-slate-700 font-bold">
-                    <i class="fa-solid fa-heart text-sky-500"></i>
-                    <span>Giải Mã Tự Kỷ</span>
-                </div>
-                <p class="text-slate-500 text-sm max-w-2xl mx-auto mb-6">
-                    Nơi tổng hợp các thắc mắc thực tế từ phụ huynh để xây dựng nội dung hữu ích và lan tỏa sự thấu hiểu trong cộng đồng.
-                </p>
-                <div class="flex justify-center gap-6 text-sm font-medium text-slate-600">
-                    <a href="https://www.youtube.com/channel/UC8RRqVV1gZyor3hPvyxjjNw" target="_blank" rel="noreferrer" class="hover:text-sky-600">Youtube</a>
-                    <a href="https://www.facebook.com" target="_blank" rel="noreferrer" class="hover:text-sky-600">Facebook</a>
-                    <a href="https://www.tiktok.com" target="_blank" rel="noreferrer" class="hover:text-sky-600">Tiktok</a>
-                </div>
-            </div>
-        </section>
     </div>
 </main>
 

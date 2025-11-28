@@ -27,11 +27,8 @@
             <a href="https://www.youtube.com/channel/UC8RRqVV1gZyor3hPvyxjjNw" target="_blank" rel="noreferrer" class="hover:text-sky-600">
                 Youtube
             </a>
-            <a href="https://www.facebook.com" target="_blank" rel="noreferrer" class="hover:text-sky-600">
+            <a href="https://www.facebook.com/autismdecoding" target="_blank" rel="noreferrer" class="hover:text-sky-600">
                 Facebook
-            </a>
-            <a href="https://www.tiktok.com" target="_blank" rel="noreferrer" class="hover:text-sky-600">
-                Tiktok
             </a>
         </div>
         <div class="text-xs text-slate-400">

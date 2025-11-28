@@ -88,6 +88,10 @@
                 <i class="fa-brands fa-youtube text-red-600"></i>
                 <?php esc_html_e('Youtube', 'giaimatuky'); ?>
             </a>
+            <a href="https://www.facebook.com/autismdecoding" target="_blank" rel="noreferrer" class="hidden md:inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:border-sky-500 hover:text-sky-600 transition">
+                <i class="fa-brands fa-facebook text-blue-600"></i>
+                <?php esc_html_e('Facebook', 'giaimatuky'); ?>
+            </a>
             <a href="<?php echo esc_url(home_url('/#gui-cau-hoi')); ?>" class="hidden md:inline-flex items-center gap-2 rounded-full bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-sky-700 transition gmk-cta-button">
                 <?php esc_html_e('Gửi câu hỏi', 'giaimatuky'); ?>
             </a>
